@@ -20,6 +20,9 @@
     #connections-graph {
       height: 700px;
       width: 100%;
+      border: 1px solid #333;
+      border-radius: 8px;
+      overflow: hidden;
     }
 
     .toggle-physics-button {
@@ -36,13 +39,22 @@
       position: sticky;
       top: 10px;
       z-index: 9999;
+      transition: background-color 0.3s ease;
+    }
+
+    .toggle-physics-button:hover {
+      background-color: #357abd;
+    }
+
+    .toggle-physics-button:active {
+      transform: translateY(1px);
     }
   </style>
 </head>
 <body>
 
 <div id="connections-graph-container">
-  <button class="toggle-physics-button">Push Button</button>
+  <button class="toggle-physics-button">Toggle Layout</button>
   <div id="connections-graph"></div>
 </div>
 
@@ -89,13 +101,22 @@
       { id: 37, title: "Chris O'Brien", tags: ["Producer", "The Waterboys", "Westlife", "Grammy-nominated"] },
       { id: 38, title: "Andrew Philpot", tags: ["Producer", "U2", "Depeche Mode"] },
       { id: 39, title: "Magnus Hoover", tags: ["Producer", "BoX", "Then Jerico"] },
-      { id: 40, title: "Sony Publishing", tags: ["Label"] },
-      // Add additional data here...
+      { id: 40, title: "Sony Publishing", tags: ["Label"] }
     ];
 
     const nodes = new vis.DataSet([]);
     const edges = new vis.DataSet([]);
     const nodeConnections = {};
+
+    // Create color groups
+    const groups = {
+      item: {
+        color: { background: '#4a90e2', border: '#357abd' }
+      },
+      tag: {
+        color: { background: '#e24a4a', border: '#bd3535' }
+      }
+    };
 
     items.forEach(item => {
       const itemNode = {
@@ -103,16 +124,26 @@
         label: item.title,
         title: `<h3>${item.title}</h3><ul>${item.tags.map(tag => `<li>${tag}</li>`).join('')}</ul>`,
         group: "item",
-        size: item.tags.length * 3
+        size: item.tags.length * 2, // Reduced from *3 to *2
+        font: { color: '#ffffff' }
       };
       nodes.add(itemNode);
 
       item.tags.forEach(tag => {
         const tagNode = nodes.get(tag);
         if (!tagNode) {
-          nodes.add({ id: tag, label: tag, group: "tag" });
+          nodes.add({ 
+            id: tag, 
+            label: tag, 
+            group: "tag",
+            font: { color: '#ffffff' }
+          });
         }
-        edges.add({ from: item.id, to: tag });
+        edges.add({ 
+          from: item.id, 
+          to: tag,
+          color: { color: '#666666', highlight: '#999999' }
+        });
 
         nodeConnections[tag] = (nodeConnections[tag] || 0) + 1;
         nodeConnections[item.id] = (nodeConnections[item.id] || 0) + 1;
@@ -121,7 +152,7 @@
 
     nodes.forEach(node => {
       const connectionCount = nodeConnections[node.id] || 0;
-      node.size = connectionCount * 3;
+      node.size = Math.max(8, connectionCount * 2); // Reduced both base size and multiplier
       nodes.update(node);
     });
 
@@ -130,31 +161,54 @@
     const options = {
       nodes: {
         shape: 'dot',
-        font: { size: 16 },
+        font: { size: 14 }, // Slightly reduced font size
+        scaling: {
+          min: 8,  // Reduced from 10
+          max: 24  // Reduced from 30
+        }
+      },
+      edges: {
+        width: 1,
+        smooth: {
+          type: 'continuous'
+        }
       },
       physics: {
         enabled: false,
         solver: 'forceAtlas2Based',
+        forceAtlas2Based: {
+          gravitationalConstant: -50,
+          centralGravity: 0.01,
+          springLength: 100,
+          springConstant: 0.08
+        }
       },
       interaction: {
         hover: true,
         zoomView: true,
+        dragView: true,
+        dragNodes: true,
         zoomSpeed: 0.5,
-        initialScale: 0.2,
+        tooltipDelay: 300
       },
+      groups: groups,
       layout: {
         randomSeed: 2,
         hierarchical: false,
         improvedLayout: false,
-        circular: true,
-      },
+        circular: true
+      }
     };
 
     const network = new vis.Network(container, data, options);
 
     network.moveTo({
       position: { x: 0, y: 0 },
-      scale: .3,
+      scale: 0.3,
+      animation: {
+        duration: 1000,
+        easingFunction: 'easeInOutQuad'
+      }
     });
 
     const toggleButton = document.querySelector(".toggle-physics-button");
@@ -164,15 +218,19 @@
     toggleButton.addEventListener("click", function () {
       physicsEnabled = !physicsEnabled;
       options.physics.enabled = physicsEnabled;
+      
       if (currentLayout === "circular") {
         options.layout.randomSeed = 2;
         options.layout.circular = false;
         currentLayout = "random";
+        this.textContent = "Switch to Circular";
       } else {
         options.layout.randomSeed = 2;
         options.layout.circular = true;
         currentLayout = "circular";
+        this.textContent = "Switch to Force-Directed";
       }
+      
       network.setOptions(options);
     });
   });
