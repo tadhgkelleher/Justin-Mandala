@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Previous head content and styles remain the same -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -54,14 +55,16 @@
 <body>
 
 <div id="connections-graph-container">
-  <button class="toggle-physics-button">Toggle Layout</button>
+  <button class="toggle-physics-button">Push Button</button>
   <div id="connections-graph"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    // Previous data setup remains the same
     const items = [
+      // ... (previous items array remains the same)
       { id: 1, title: "Justin", tags: ["RTE's Late Late Show", "Sony Music", "Warner Bros", "4AD", "Satanta Records", "Performing", "Recording", "Touring"] },
       { id: 2, title: "Rod Stewart", tags: ["Artist"] },
       { id: 3, title: "Paul Young", tags: ["Artist"] },
@@ -108,7 +111,6 @@
     const edges = new vis.DataSet([]);
     const nodeConnections = {};
 
-    // Create color groups
     const groups = {
       item: {
         color: { background: '#4a90e2', border: '#357abd' }
@@ -124,7 +126,7 @@
         label: item.title,
         title: `<h3>${item.title}</h3><ul>${item.tags.map(tag => `<li>${tag}</li>`).join('')}</ul>`,
         group: "item",
-        size: item.tags.length * 2, // Reduced from *3 to *2
+        size: item.tags.length * 2,
         font: { color: '#ffffff' }
       };
       nodes.add(itemNode);
@@ -152,19 +154,20 @@
 
     nodes.forEach(node => {
       const connectionCount = nodeConnections[node.id] || 0;
-      node.size = Math.max(8, connectionCount * 2); // Reduced both base size and multiplier
+      node.size = Math.max(8, connectionCount * 2);
       nodes.update(node);
     });
 
     const container = document.getElementById("connections-graph");
     const data = { nodes: nodes, edges: edges };
+
     const options = {
       nodes: {
         shape: 'dot',
-        font: { size: 14 }, // Slightly reduced font size
+        font: { size: 14 },
         scaling: {
-          min: 8,  // Reduced from 10
-          max: 12  // Reduced from 30
+          min: 8,
+          max: 12
         }
       },
       edges: {
@@ -181,6 +184,9 @@
           centralGravity: 0.01,
           springLength: 100,
           springConstant: 0.08
+        },
+        stabilization: {
+          iterations: 100
         }
       },
       interaction: {
@@ -194,13 +200,37 @@
       groups: groups,
       layout: {
         randomSeed: 2,
-        hierarchical: false,
-        improvedLayout: false,
-        circular: true
+        improvedLayout: true
       }
     };
 
     const network = new vis.Network(container, data, options);
+
+    function applyCircularLayout() {
+      const positions = {};
+      const nodeCount = nodes.length;
+      const radius = 300;
+      const angle = (2 * Math.PI) / nodeCount;
+      
+      let i = 0;
+      nodes.forEach((node) => {
+        positions[node.id] = {
+          x: radius * Math.cos(angle * i),
+          y: radius * Math.sin(angle * i)
+        };
+        i++;
+      });
+      
+      network.setOptions({ physics: { enabled: false } });
+      network.moveTo({ scale: 0.3 });
+      network.body.data.nodes.update(
+        nodes.map(node => ({
+          id: node.id,
+          x: positions[node.id].x,
+          y: positions[node.id].y
+        }))
+      );
+    }
 
     network.moveTo({
       position: { x: 0, y: 0 },
@@ -211,27 +241,19 @@
       }
     });
 
-    const toggleButton = document.querySelector(".toggle-physics-button");
-    let physicsEnabled = false;
-    let currentLayout = "circular";
+    // Initial layout
+    applyCircularLayout();
 
-    toggleButton.addEventListener("click", function () {
-      physicsEnabled = !physicsEnabled;
-      options.physics.enabled = physicsEnabled;
-      
-      if (currentLayout === "circular") {
-        options.layout.randomSeed = 2;
-        options.layout.circular = false;
-        currentLayout = "random";
-        this.textContent = "Switch to Circular";
+    const toggleButton = document.querySelector(".toggle-physics-button");
+    let isPhysicsEnabled = false;
+
+    toggleButton.addEventListener("click", function() {
+      isPhysicsEnabled = !isPhysicsEnabled;
+      if (isPhysicsEnabled) {
+        network.setOptions({ physics: { enabled: true } });
       } else {
-        options.layout.randomSeed = 2;
-        options.layout.circular = true;
-        currentLayout = "circular";
-        this.textContent = "Switch to Force-Directed";
+        applyCircularLayout();
       }
-      
-      network.setOptions(options);
     });
   });
 </script>
