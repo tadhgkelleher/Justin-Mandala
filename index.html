@@ -154,7 +154,7 @@
   { "id": 50, "title": "The Blame", "tags": ["The Glee Club"], "videoUrl": "https://www.youtube.com/embed/kXGTHDK8kpw" },
       ];
 
-    const nodes = new vis.DataSet([]);
+     const nodes = new vis.DataSet([]);
       const edges = new vis.DataSet([]);
       const nodeConnections = {};
 
@@ -163,100 +163,44 @@
         tag: { color: { background: '#e24a4a', border: '#bd3535' } }
       };
 
-      // First pass: Count connections for each node
       items.forEach(item => {
-        item.tags.forEach(tag => {
-          nodeConnections[tag] = (nodeConnections[tag] || 0) + 1;
-          nodeConnections[item.id] = (nodeConnections[item.id] || 0) + 1;
-        });
-      });
-
-      // Find the maximum number of connections
-      const maxConnections = Math.max(...Object.values(nodeConnections));
-
-      // Function to calculate node size based on connections
-      function calculateNodeSize(connections) {
-        const minSize = 15;  // Minimum node size
-        const maxSize = 50;  // Maximum node size
-        const sizeRange = maxSize - minSize;
-        
-        // Use a logarithmic scale for better distribution
-        const scaleFactor = Math.log(connections + 1) / Math.log(maxConnections + 1);
-        return minSize + (sizeRange * scaleFactor);
-      }
-
-      // Second pass: Create nodes with calculated sizes
-      items.forEach(item => {
-        const connections = nodeConnections[item.id] || 0;
         const itemNode = {
           id: item.id,
           label: item.title,
           title: `<h3>${item.title}</h3><iframe width="200" height="150" src="${item.videoUrl}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`,
           group: "item",
-          font: { color: '#ffffff' },
-          size: calculateNodeSize(connections),
-          value: connections  // Adding value property for size scaling
+          font: { color: '#ffffff' }
         };
         nodes.add(itemNode);
 
         item.tags.forEach(tag => {
-          if (!nodes.get(tag)) {
-            const tagConnections = nodeConnections[tag] || 0;
-            nodes.add({
-              id: tag,
-              label: tag,
-              group: "tag",
-              font: { color: '#ffffff' },
-              size: calculateNodeSize(tagConnections),
-              value: tagConnections  // Adding value property for size scaling
-            });
+          const tagNode = nodes.get(tag);
+          if (!tagNode) {
+            nodes.add({ id: tag, label: tag, group: "tag", font: { color: '#ffffff' } });
           }
-          edges.add({
-            from: item.id,
-            to: tag,
-            color: { color: '#666666', highlight: '#999999' }
-          });
+          edges.add({ from: item.id, to: tag, color: { color: '#666666', highlight: '#999999' } });
+
+          nodeConnections[tag] = (nodeConnections[tag] || 0) + 1;
+          nodeConnections[item.id] = (nodeConnections[item.id] || 0) + 1;
         });
+      });
+
+      nodes.forEach(node => {
+        const connectionCount = nodeConnections[node.id] || 0;
+        node.size = Math.max(8, connectionCount * 3); // Adjusted scaling factor to make nodes with more connections larger
+        nodes.update(node);
       });
 
       const container = document.getElementById("connections-graph");
       const data = { nodes: nodes, edges: edges };
 
       const options = {
-        nodes: {
-          shape: 'dot',
-          font: { size: 14 },
-          scaling: {
-            min: 15,
-            max: 50,
-            label: {
-              enabled: true,
-              min: 14,
-              max: 24
-            }
-          }
-        },
+        nodes: { shape: 'dot', font: { size: 14 }, scaling: { min: 20, max: 100 } },
         edges: { width: 1, smooth: { type: 'continuous' } },
-        physics: {
-          enabled: false,
-          solver: 'forceAtlas2Based',
-          forceAtlas2Based: {
-            gravitationalConstant: -50,
-            centralGravity: 0.001,
-            springLength: 200,
-            springConstant: 0.08
-          },
-          stabilization: { iterations: 100 }
-        },
-        interaction: {
-          hover: true,
-          zoomView: true,
-          dragView: true,
-          dragNodes: true,
-          zoomSpeed: 0.5,
-          tooltipDelay: 300
-        },
-        groups: groups
+        physics: { enabled: false, solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -50, centralGravity: 0.001, springLength: 200, springConstant: 0.08 }, stabilization: { iterations: 100 } },
+        interaction: { hover: true, zoomView: true, dragView: true, dragNodes: true, zoomSpeed: 0.5, tooltipDelay: 300 },
+        groups: groups,
+        layout: { randomSeed: 2, improvedLayout: true }
       };
 
       const network = new vis.Network(container, data, options);
@@ -266,6 +210,7 @@
         const nodeCount = nodes.length;
         const radius = 300;
         const angle = (2 * Math.PI) / nodeCount;
+        const yOffset = -100; // Add an offset to raise the mandala
         
         let i = 0;
         nodes.forEach((node) => {
@@ -287,20 +232,15 @@
         );
       }
 
-      // Initial layout and positioning
-      network.once('stabilizationIterationsDone', function() {
-        network.moveTo({
-          position: { x: 0, y: 0 },
-          scale: 0.3,
-          animation: {
-            duration: 1000,
-            easingFunction: 'easeInOutQuad'
-          }
-        });
-        applyCircularLayout();
+      network.moveTo({
+        position: { x: 0, y: 0 },
+        scale: 0.3,
+        animation: { duration: 1000, easingFunction: 'easeInOutQuad' }
       });
 
-      // Toggle physics button functionality
+      // Initial layout
+      applyCircularLayout();
+
       const toggleButton = document.querySelector(".toggle-physics-button");
       let isPhysicsEnabled = false;
 
@@ -313,19 +253,21 @@
         }
       });
 
-      // Video modal functionality
+      // Open video in modal on node click
       network.on("click", function (params) {
         const clickedNode = params.nodes[0];
         const item = items.find(i => i.id === clickedNode);
         if (item && item.videoUrl) {
+          // Show the modal and embed the video
           document.getElementById("video-modal").style.display = "block";
           document.getElementById("modal-video").src = item.videoUrl;
         }
       });
 
+      // Close the modal when the close button is clicked
       document.getElementById("close-modal").addEventListener("click", function() {
         document.getElementById("video-modal").style.display = "none";
-        document.getElementById("modal-video").src = "";
+        document.getElementById("modal-video").src = "";  // Stop the video
       });
     });
   </script>
