@@ -223,7 +223,7 @@
 
       nodes.forEach(node => {
         const connectionCount = nodeConnections[node.id] || 0;
-        node.size = Math.max(8, connectionCount * 2); // Adjusted scaling factor to make nodes with more connections larger
+        node.size = Math.max(8, connectionCount * 1.5); // Adjusted scaling factor to make nodes with more connections larger
         nodes.update(node);
       });
 
