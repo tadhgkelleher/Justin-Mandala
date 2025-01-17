@@ -1,293 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Previous head content and styles remain the same -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Connections Graph</title>
+  <title>Connections Graph with Video</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
-<style>
-  /* Container for the graph */
-  #connections-graph-container {
-    position: relative;
-    background-color: #121212;  /* Dark theme */
-    margin: 0 auto;
-    width: 100%;
-    max-width: 1200px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  }
+  <style>
+    /* Container for the graph */
+    #connections-graph-container {
+      position: relative;
+      background-color: #121212;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 1200px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
 
-  /* Graph container */
-  #connections-graph {
-    height: 700px;
-    width: 100%;
-    border: 1px solid #333;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-top: 20px;
-    background-color: #222;  /* Dark background for the graph */
-  }
+    /* Graph container */
+    #connections-graph {
+      height: 700px;
+      width: 100%;
+      border: 1px solid #333;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 20px;
+      background-color: #222;
+    }
 
-  /* Button styling */
-  .toggle-physics-button {
-    background: linear-gradient(135deg, #4a90e2, #357abd);
-    color: white;
-    padding: 14px 28px;
-    border: none;
-    border-radius: 6px;
-    font-size: 18px;
-    cursor: pointer;
-    text-align: center;
-    transition: transform 0.3s, background-color 0.3s ease, box-shadow 0.2s ease;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-  }
+    /* Button styling */
+    .toggle-physics-button {
+      background: linear-gradient(135deg, #4a90e2, #357abd);
+      color: white;
+      padding: 14px 28px;
+      border: none;
+      border-radius: 6px;
+      font-size: 18px;
+      cursor: pointer;
+      text-align: center;
+      transition: transform 0.3s, background-color 0.3s ease, box-shadow 0.2s ease;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    }
 
-  /* Button hover effect */
-  .toggle-physics-button:hover {
-    background-color: #357abd;
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  }
+    /* Button hover effect */
+    .toggle-physics-button:hover {
+      background-color: #357abd;
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
 
-  /* Button active effect */
-  .toggle-physics-button:active {
-    transform: scale(0.98);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-  }
-</style>
+    /* Button active effect */
+    .toggle-physics-button:active {
+      transform: scale(0.98);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    }
 
+    /* Modal styles */
+    #video-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      height: 80%;
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    #close-modal {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #fff;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
 <body>
   <div id="connections-graph-container">
-    <button class="toggle-physics-button">Push Button</button>
+    <button class="toggle-physics-button">Toggle Physics</button>
     <div id="connections-graph"></div>
   </div>
 
+  <!-- Modal for video -->
+  <div id="video-modal">
+    <button id="close-modal">Close</button>
+    <iframe id="modal-video" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // Previous data setup remains the same
-    const items = [
-      // ... (previous items array remains the same)
-  { "id": 1, "title": "Summerhill Dawn", "tags": ["FORGET ME NOTS", "1992"] },
-  { "id": 2, "title": "Trouble", "tags": ["FORGET ME NOTS", "1990"] },
-  { "id": 3, "title": "Beautiful Goodbye", "tags": ["Cilla Black", "RTE's Late Late Show"] },
-  { "id": 4, "title": "Single", "tags": ["Natasha Bedingfield", "RTE's Late Late Show"] },
-  { "id": 5, "title": "Smile", "tags": ["Rod Stewart"] },
-  { "id": 6, "title": "There Are More Things", "tags": ["LiR"] },
-  { "id": 7, "title": "Muff Winwood at The A&R Awards", "tags": ["2016"] },
-  { "id": 8, "title": "Traveller", "tags": ["LiR", "Fan Clip", "2020"] },
-  { "id": 9, "title": "Reverb: The Golden Horde Profile", "tags": ["RTÉ"] },
-  { "id": 10, "title": "Prayer Before A Voyage", "tags": ["Interference", "The Late Late Show"] },
-  { "id": 11, "title": "Great Motivator", "tags": ["Igloo"] },
-  { "id": 12, "title": "Falling At Your Feet", "tags": ["U2", "The Late Late Show", "2003"] },
-  { "id": 13, "title": "All Your Life", "tags": ["Bickley / O'Farrell"] },
-  { "id": 14, "title": "Friends in Time", "tags": ["The Golden Horde"] },
-  { "id": 15, "title": "100 Boys", "tags": ["The Golden Horde"] },
-  { "id": 16, "title": "Endless Weekend", "tags": ["The Golden Horde"] },
-  { "id": 17, "title": "ETI", "tags": ["The Golden Horde", "Live Footage"] },
-  { "id": 18, "title": "Black Blade", "tags": ["The Golden Horde", "Live"] },
-  { "id": 19, "title": "Down Down Down", "tags": ["The Golden Horde", "Live"] },
-  { "id": 20, "title": "Friends in Time", "tags": ["The Golden Horde"] },
-  { "id": 21, "title": "Book of Everlasting Things", "tags": ["The Golden Horde", "Unreleased Demo"] },
-  { "id": 22, "title": "Rorschach", "tags": ["The Golden Horde", "Demo Version"] },
-  { "id": 23, "title": "Solar System", "tags": ["The Golden Horde", "Live", "Bootleg"] },
-  { "id": 24, "title": "Louie, Louie / Hang On Sloopy", "tags": ["Johnny Thunders", "The Golden Horde"] },
-  { "id": 25, "title": "Something Beautiful", "tags": ["The Golden Horde", "Unreleased", "Demo"] },
-  { "id": 26, "title": "Blitzkrieg Bop", "tags": ["Joey Ramone", "The Resistance", "Live"] },
-  { "id": 27, "title": "Hopes of a Dream", "tags": ["The Golden Horde", "Unreleased", "Demo"] },
-  { "id": 28, "title": "Cigarettes & Sunshine", "tags": ["The Golden Horde", "Unreleased", "Demo"] },
-  { "id": 29, "title": "Killer Species", "tags": ["Interference"] },
-  { "id": 30, "title": "Avian Attak", "tags": ["Shunk"] },
-  { "id": 31, "title": "Avian Attak", "tags": ["Spinning World"] },
-  { "id": 32, "title": "Die Nebula", "tags": ["David Bickley"] },
-  { "id": 33, "title": "Track With No Name", "tags": ["Avian Attak"] },
-  { "id": 34, "title": "Kaos Split", "tags": ["Avian Attak"] },
-  { "id": 35, "title": "Gold", "tags": ["Interference", "From Movie Once"] },
-  { "id": 36, "title": "I Was Looking For Someone", "tags": ["Interference"] },
-  { "id": 37, "title": "Love Song", "tags": ["Interference"] },
-  { "id": 38, "title": "Live in Whelans 1990", "tags": ["Interference", "Full Gig"] },
-  { "id": 39, "title": "Gold", "tags": ["#OnceCastEP", "London Cast of Once"] },
-  { "id": 40, "title": "Gold", "tags": ["Interference", "Cork Opera House", "Cork 02.02.17"] },
-  { "id": 41, "title": "Wild Cat Strutting Thing", "tags": ["Mundy", "Fergus O'Farrell", "James O'Leary"] },
-  { "id": 42, "title": "Vinegar Girl", "tags": ["Mundy", "Fergus O'Farrell", "James O'Leary"] },
-  { "id": 43, "title": "No Reason", "tags": ["The Glee Club", "Official Music Video"] },
-  { "id": 44, "title": "The Blame", "tags": ["The Glee Club"] },
-  { "id": 45, "title": "Icy Blue", "tags": ["The Glee Club"] },
-  { "id": 46, "title": "Bad Child's Dolly", "tags": ["The Glee Club"] },
-  { "id": 47, "title": "See Me Through", "tags": ["LiR"] },
-  { "id": 48, "title": "Good Cake Bad Cake", "tags": ["The Story of LiR"] },
-  { "id": 49, "title": "Friends in Time", "tags": ["FiendsInSlime"] },
-  { "id": 50, "title": "Soap Singers Beat", "tags": ["The Forget Me Nots", "Absolutely Stunning"] },
-  { "id": 51, "title": "Swim To Me / Whatever", "tags": ["Darling Sugar Honey"] },
-  { "id": 52, "title": "Nine Million Bicycles", "tags": ["Katie Melua"] },
-  { "id": 53, "title": "Comeback Girl", "tags": ["Republic of Loose"] },
-  { "id": 54, "title": "Falling Out the Window Dress", "tags": ["The Golden Horde", "Unreleased Demo"] },
-  { "id": 55, "title": "ETI", "tags": ["The Golden Horde", "Live"] },
-  { "id": 56, "title": "Fiona", "tags": ["The Golden Horde", "Live", "Bootleg"] },
-  { "id": 57, "title": "2 Fay Wray EP", "tags": ["Forget-Me-Nots"] },
-  { "id": 58, "title": "Have A Scene", "tags": ["The Golden Horde", "Live", "Bootleg"] },
-  { "id": 59, "title": "The Contender", "tags": ["Finbar Wright", "RTE's Up for the Match"] },
-  { id: 62, title: "ETI (live)", tags: ["The Golden Horde", "Video"] }
-];
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const items = [
+        { "id": 1, "title": "Summerhill Dawn", "tags": ["FORGET ME NOTS", "1992"], "videoUrl": "https://www.youtube.com/embed/_kn_N6Nxnh8" },
+        { "id": 2, "title": "Trouble", "tags": ["FORGET ME NOTS", "1990"], "videoUrl": "https://www.youtube.com/embed/_kn_N6Nxnh8" },
+        { "id": 3, "title": "Beautiful Goodbye", "tags": ["Cilla Black", "RTE's Late Late Show"], "videoUrl": "https://www.youtube.com/embed/_kn_N6Nxnh8" },
+        // Add more items here as needed
+      ];
 
-    const nodes = new vis.DataSet([]);
-    const edges = new vis.DataSet([]);
-    const nodeConnections = {};
+      const nodes = new vis.DataSet([]);
+      const edges = new vis.DataSet([]);
+      const nodeConnections = {};
 
-    const groups = {
-      item: {
-        color: { background: '#4a90e2', border: '#357abd' }
-      },
-      tag: {
-        color: { background: '#e24a4a', border: '#bd3535' }
-      }
-    };
-
-    items.forEach(item => {
-      const itemNode = {
-        id: item.id,
-        label: item.title,
-        title: `<h3>${item.title}</h3><ul>${item.tags.map(tag => `<li>${tag}</li>`).join('')}</ul>`,
-        group: "item",
-        size: item.tags.length * 2,
-        font: { color: '#ffffff' }
+      const groups = {
+        item: { color: { background: '#4a90e2', border: '#357abd' } },
+        tag: { color: { background: '#e24a4a', border: '#bd3535' } }
       };
-      nodes.add(itemNode);
 
-      item.tags.forEach(tag => {
-        const tagNode = nodes.get(tag);
-        if (!tagNode) {
-          nodes.add({ 
-            id: tag, 
-            label: tag, 
-            group: "tag",
-            font: { color: '#ffffff' }
-          });
-        }
-        edges.add({ 
-          from: item.id, 
-          to: tag,
-          color: { color: '#666666', highlight: '#999999' }
-        });
-
-        nodeConnections[tag] = (nodeConnections[tag] || 0) + 1;
-        nodeConnections[item.id] = (nodeConnections[item.id] || 0) + 1;
-      });
-    });
-
-    nodes.forEach(node => {
-      const connectionCount = nodeConnections[node.id] || 0;
-      node.size = Math.max(8, connectionCount * 2);
-      nodes.update(node);
-    });
-
-    const container = document.getElementById("connections-graph");
-    const data = { nodes: nodes, edges: edges };
-
-    const options = {
-      nodes: {
-        shape: 'dot',
-        font: { size: 14 },
-        scaling: {
-          min: 8,
-          max: 12
-        }
-      },
-      edges: {
-        width: 1,
-        smooth: {
-          type: 'continuous'
-        }
-      },
-      physics: {
-        enabled: false,
-        solver: 'forceAtlas2Based',
-        forceAtlas2Based: {
-          gravitationalConstant: -50,
-          centralGravity: 0.01,
-          springLength: 100,
-          springConstant: 0.08
-        },
-        stabilization: {
-          iterations: 100
-        }
-      },
-      interaction: {
-        hover: true,
-        zoomView: true,
-        dragView: true,
-        dragNodes: true,
-        zoomSpeed: 0.5,
-        tooltipDelay: 300
-      },
-      groups: groups,
-      layout: {
-        randomSeed: 2,
-        improvedLayout: true
-      }
-    };
-
-    const network = new vis.Network(container, data, options);
-
-    function applyCircularLayout() {
-      const positions = {};
-      const nodeCount = nodes.length;
-      const radius = 300;
-      const angle = (2 * Math.PI) / nodeCount;
-        const yOffset = -100; // Add an offset to raise the mandala
-      
-      let i = 0;
-      nodes.forEach((node) => {
-        positions[node.id] = {
-          x: radius * Math.cos(angle * i),
-          y: radius * Math.sin(angle * i)
+      items.forEach(item => {
+        const itemNode = {
+          id: item.id,
+          label: item.title,
+          title: `<h3>${item.title}</h3><iframe width="200" height="150" src="${item.videoUrl}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`,
+          group: "item",
+          size: item.tags.length * 2,
+          font: { color: '#ffffff' }
         };
-        i++;
+        nodes.add(itemNode);
+
+        item.tags.forEach(tag => {
+          const tagNode = nodes.get(tag);
+          if (!tagNode) {
+            nodes.add({ id: tag, label: tag, group: "tag", font: { color: '#ffffff' } });
+          }
+          edges.add({ from: item.id, to: tag, color: { color: '#666666', highlight: '#999999' } });
+
+          nodeConnections[tag] = (nodeConnections[tag] || 0) + 1;
+          nodeConnections[item.id] = (nodeConnections[item.id] || 0) + 1;
+        });
       });
-      
-      network.setOptions({ physics: { enabled: false } });
-      network.moveTo({ scale: 0.3 });
-      network.body.data.nodes.update(
-        nodes.map(node => ({
-          id: node.id,
-          x: positions[node.id].x,
-          y: positions[node.id].y
-        }))
-      );
-    }
 
-    network.moveTo({
-      position: { x: 0, y: 0 },
-      scale: 0.3,
-      animation: {
-        duration: 1000,
-        easingFunction: 'easeInOutQuad'
+      nodes.forEach(node => {
+        const connectionCount = nodeConnections[node.id] || 0;
+        node.size = Math.max(8, connectionCount * 2);
+        nodes.update(node);
+      });
+
+      const container = document.getElementById("connections-graph");
+      const data = { nodes: nodes, edges: edges };
+
+      const options = {
+        nodes: { shape: 'dot', font: { size: 14 }, scaling: { min: 8, max: 12 } },
+        edges: { width: 1, smooth: { type: 'continuous' } },
+        physics: { enabled: false, solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -50, centralGravity: 0.01, springLength: 100, springConstant: 0.08 }, stabilization: { iterations: 100 } },
+        interaction: { hover: true, zoomView: true, dragView: true, dragNodes: true, zoomSpeed: 0.5, tooltipDelay: 300 },
+        groups: groups,
+        layout: { randomSeed: 2, improvedLayout: true }
+      };
+
+      const network = new vis.Network(container, data, options);
+
+      function applyCircularLayout() {
+        const positions = {};
+        const nodeCount = nodes.length;
+        const radius = 300;
+        const angle = (2 * Math.PI) / nodeCount;
+        const yOffset = -100; // Add an offset to raise the mandala
+        
+        let i = 0;
+        nodes.forEach((node) => {
+          positions[node.id] = {
+            x: radius * Math.cos(angle * i),
+            y: radius * Math.sin(angle * i)
+          };
+          i++;
+        });
+        
+        network.setOptions({ physics: { enabled: false } });
+        network.moveTo({ scale: 0.3 });
+        network.body.data.nodes.update(
+          nodes.map(node => ({
+            id: node.id,
+            x: positions[node.id].x,
+            y: positions[node.id].y
+          }))
+        );
       }
+
+      network.moveTo({
+        position: { x: 0, y: 0 },
+        scale: 0.3,
+        animation: { duration: 1000, easingFunction: 'easeInOutQuad' }
+      });
+
+      // Initial layout
+      applyCircularLayout();
+
+      const toggleButton = document.querySelector(".toggle-physics-button");
+      let isPhysicsEnabled = false;
+
+      toggleButton.addEventListener("click", function() {
+        isPhysicsEnabled = !isPhysicsEnabled;
+        if (isPhysicsEnabled) {
+          network.setOptions({ physics: { enabled: true } });
+        } else {
+          applyCircularLayout();
+        }
+      });
+
+      // Open video in modal on node click
+      network.on("click", function (params) {
+        const clickedNode = params.nodes[0];
+        const item = items.find(i => i.id === clickedNode);
+        if (item && item.videoUrl) {
+          // Show the modal and embed the video
+          document.getElementById("video-modal").style.display = "block";
+          document.getElementById("modal-video").src = item.videoUrl;
+        }
+      });
+
+      // Close the modal when the close button is clicked
+      document.getElementById("close-modal").addEventListener("click", function() {
+        document.getElementById("video-modal").style.display = "none";
+        document.getElementById("modal-video").src = "";  // Stop the video
+      });
     });
-
-    // Initial layout
-    applyCircularLayout();
-
-    const toggleButton = document.querySelector(".toggle-physics-button");
-    let isPhysicsEnabled = false;
-
-    toggleButton.addEventListener("click", function() {
-      isPhysicsEnabled = !isPhysicsEnabled;
-      if (isPhysicsEnabled) {
-        network.setOptions({ physics: { enabled: true } });
-      } else {
-        applyCircularLayout();
-      }
-    });
-  });
-</script>
-
+  </script>
 </body>
 </html>
