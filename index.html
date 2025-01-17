@@ -233,7 +233,7 @@
       const options = {
         nodes: { shape: 'dot', font: { size: 14 }, scaling: { min: 10, max: 20 } },
         edges: { width: 1, smooth: { type: 'continuous' } },
-        physics: { enabled: false, solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -50, centralGravity: 0.005, springLength: 150, springConstant: 0.08 }, stabilization: { iterations: 100 } },
+        physics: { enabled: false, solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -50, centralGravity: 0.0024, springLength: 150, springConstant: 0.08 }, stabilization: { iterations: 100 } },
         interaction: { hover: true, zoomView: true, dragView: true, dragNodes: true, zoomSpeed: 0.5, tooltipDelay: 300 },
         groups: groups,
         layout: { randomSeed: 2, improvedLayout: true }
