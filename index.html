@@ -103,49 +103,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
 
-<script>
-  // This variable will store the player instance
-  var player;
-
-  // This function creates an iframe player when the API is ready
-  function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
-      height: '0',
-      width: '0',
-      videoId: '_kn_N6Nxnh8', // Set the video ID
-      events: {
-        'onReady': onPlayerReady,
-        'onStateChange': onPlayerStateChange
-      }
-    });
-  }
-
-  // This function is called when the player is ready
-  function onPlayerReady(event) {
-    event.target.playVideo(); // Play the video immediately when ready
-  }
-
-  // This function handles player state changes
-  function onPlayerStateChange(event) {
-    if (event.data === YT.PlayerState.ENDED) {
-      // Optionally, loop the video or handle when it ends
-      player.playVideo();
-    }
-  }
-
-  // Stop the player if a new video is selected
-  function stopPlayer() {
-    if (player) {
-      player.stopVideo();
-    }
-  }
-</script>
-
-  // Example: when a new video is selected
-document.getElementById('newVideoButton').addEventListener('click', function() {
-  stopPlayer();
-  // Load the new video player or take other actions as needed
-});
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
