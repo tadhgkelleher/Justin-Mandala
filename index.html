@@ -15,6 +15,12 @@
       padding: 0;
       overflow: hidden; /* Ensure the particles stay contained */
       font-family: 'Arial', sans-serif;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.8)), 
+                  url('https://i.pinimg.com/736x/be/38/55/be3855a6af3576e4f8a1cea684513770.jpg') 
+                  no-repeat bottom center;
+      background-size: cover;
+      background-attachment: fixed;
+      color: white;
     }
 
     /* Header styling */
@@ -73,7 +79,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: 1;
+      z-index: 0; /* Make sure particles are behind everything */
     }
 
     /* Graph container styling */
@@ -269,7 +275,6 @@
       retina_detect: true
     });
   </script>
-
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
 
