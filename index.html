@@ -6,6 +6,18 @@
   <title>Connections Graph with Video</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
   <style>
+    /* Page background with mountain scape */
+    body {
+      position: relative;
+      min-height: 100vh;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.8)), 
+                  url('https://i.pinimg.com/736x/be/38/55/be3855a6af3576e4f8a1cea684513770.jpg') 
+                  no-repeat bottom center;
+      background-size: cover;
+      background-attachment: fixed;
+      color: white;
+    }
+
     /* Container for the graph */
     #connections-graph-container {
       position: relative;
@@ -97,7 +109,8 @@
     <button id="close-modal">Close</button>
     <iframe id="modal-video" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
   </div>
-<script src="https://www.youtube.com/iframe_api"></script>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
   <div id="player"></div>
 
 
