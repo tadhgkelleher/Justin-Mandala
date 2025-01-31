@@ -6,7 +6,7 @@
   <title>Connections Graph with Video</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
   <style>
-    /* Page background with mountain scape */
+    /* General page styling */
     body {
       position: relative;
       min-height: 100vh;
@@ -16,9 +16,59 @@
       background-size: cover;
       background-attachment: fixed;
       color: white;
+      font-family: 'Arial', sans-serif;
     }
 
-    /* Container for the graph */
+    /* Header styling */
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background-color: rgba(44, 44, 44, 0.8);
+      padding: 15px 0;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #d3d3d3;
+      z-index: 100;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 36px;
+    }
+
+    /* Navigation Links */
+    .nav-links {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .nav-links li {
+      display: inline;
+    }
+
+    .nav-links a {
+      color: #d3d3d3;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+
+    .nav-links a:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    /* Graph container styling */
     #connections-graph-container {
       position: relative;
       background-color: #121212;
@@ -31,9 +81,10 @@
       align-items: center;
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      margin-top: 100px; /* Adjust for the header height */
     }
 
-    /* Graph container */
+    /* Graph styling */
     #connections-graph {
       height: 700px;
       width: 100%;
@@ -99,6 +150,18 @@
   </style>
 </head>
 <body>
+  <header>
+    <h1>Justin Healy</h1>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#credits">Credits</a></li>
+      <li><a href="#endorsements">Endorsements</a></li>
+      <li><a href="#discography">Discography</a></li>
+      <li><a href="#videos">Videos</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </header>
+
   <div id="connections-graph-container">
     <button class="toggle-physics-button">Push Button</button>
     <div id="connections-graph"></div>
