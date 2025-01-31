@@ -3,69 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Media Nexus</title>
+  <title>Connections Graph with Video</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
   <style>
-    :root {
-      --space-gradient: linear-gradient(45deg, #0b0b2d, #1a1a4a, #2d0b2d);
-      --node-glow: radial-gradient(circle at center, #4a90e255, transparent 70%);
-      --cyber-blue: #00f3ff;
-    }
-
-    body {
-      margin: 0;
-      background: var(--space-gradient);
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      color: white;
-      overflow-x: hidden;
-    }
-
+    /* Container for the graph */
     #connections-graph-container {
       position: relative;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: radial-gradient(circle at 50% 50%, #ffffff08 0%, #000000 100%);
-    }
-
-    #connections-graph {
-      height: 100%;
+      background-color: #121212;
+      margin: 0 auto;
       width: 100%;
-    }
-
-    .controls {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      z-index: 1000;
+      max-width: 1200px;
+      padding: 20px;
       display: flex;
-      gap: 10px;
-      background: #ffffff0d;
-      padding: 15px;
-      border-radius: 10px;
-      backdrop-filter: blur(10px);
-      border: 1px solid #ffffff1a;
+      flex-direction: column;
+      align-items: center;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
 
-    .cyber-button {
-      background: linear-gradient(145deg, #0b0b2d, #2d0b2d);
-      color: var(--cyber-blue);
-      padding: 12px 24px;
-      border: 1px solid var(--cyber-blue);
+    /* Graph container */
+    #connections-graph {
+      height: 700px;
+      width: 100%;
+      border: 1px solid #333;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 20px;
+      background-color: #222;
+    }
+
+    /* Button styling */
+    .toggle-physics-button {
+      background: linear-gradient(135deg, #4a90e2, #357abd);
+      color: white;
+      padding: 14px 28px;
+      border: none;
       border-radius: 6px;
-      font-family: 'Courier New', monospace;
+      font-size: 18px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      text-shadow: 0 0 8px var(--cyber-blue);
-      box-shadow: 0 0 15px #00f3ff33;
+      text-align: center;
+      transition: transform 0.3s, background-color 0.3s ease, box-shadow 0.2s ease;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
     }
 
-    .cyber-button:hover {
-      background: linear-gradient(145deg, #2d0b2d, #0b0b2d);
+    /* Button hover effect */
+    .toggle-physics-button:hover {
+      background-color: #357abd;
       transform: scale(1.05);
-      box-shadow: 0 0 25px #00f3ff66;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     }
 
+    /* Button active effect */
+    .toggle-physics-button:active {
+      transform: scale(0.98);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Modal styles */
     #video-modal {
       display: none;
       position: fixed;
@@ -74,84 +69,41 @@
       transform: translate(-50%, -50%);
       width: 80%;
       height: 80%;
-      background: radial-gradient(circle at center, #1a1a4a, #0b0b2d);
-      border-radius: 20px;
-      border: 2px solid var(--cyber-blue);
-      box-shadow: 0 0 50px #00f3ff33;
-      overflow: hidden;
-    }
-
-    .modal-content {
-      position: relative;
-      height: 100%;
-      padding: 40px;
-      backdrop-filter: blur(20px);
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 10px;
+      padding: 20px;
     }
 
     #close-modal {
       position: absolute;
-      top: 15px;
-      right: 15px;
-      background: transparent;
+      top: 10px;
+      right: 10px;
+      background-color: #fff;
+      padding: 10px;
+      font-size: 16px;
       border: none;
-      color: var(--cyber-blue);
-      font-size: 24px;
       cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    #close-modal:hover {
-      transform: rotate(90deg);
-    }
-
-    .node-tooltip {
-      background: #000000dd !important;
-      border: 1px solid var(--cyber-blue) !important;
-      border-radius: 8px !important;
-      backdrop-filter: blur(10px) !important;
-      box-shadow: 0 0 20px #00f3ff33 !important;
-    }
-
-    .vis-tooltip {
-      max-width: 400px !important;
-      pointer-events: auto !important;
-    }
-
-    .particles {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    @keyframes particle-flow {
-      from { transform: translateY(-100%) rotate(0deg); }
-      to { transform: translateY(100vh) rotate(360deg); }
     }
   </style>
 </head>
 <body>
   <div id="connections-graph-container">
-    <div class="controls">
-      <button class="cyber-button" id="toggle-physics">TOGGLE DYNAMICS</button>
-      <button class="cyber-button" id="reset-layout">RESET NEXUS</button>
-      <button class="cyber-button" id="auto-rotate">AUTO ORBIT</button>
-      <input type="text" class="cyber-button" id="search" placeholder="SEARCH NODES...">
-    </div>
+    <button class="toggle-physics-button">Toggle Physics</button>
     <div id="connections-graph"></div>
-    <div class="particles"></div>
   </div>
 
+  <!-- Modal for video -->
   <div id="video-modal">
-    <div class="modal-content">
-      <button id="close-modal">✕</button>
-      <iframe id="modal-video" width="100%" height="90%" frameborder="0" allowfullscreen></iframe>
-      <div id="video-playlist"></div>
-    </div>
+    <button id="close-modal">Close</button>
+    <iframe id="modal-video" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
   </div>
+<script src="https://www.youtube.com/iframe_api"></script>
+  <div id="player"></div>
+
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+
+
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const items = [
@@ -243,174 +195,56 @@
   { "id": 85, "title": "Pete Smith", "tags": ["Producer", "Sting", "The Police", "Duran Duran"] },
       ];
 
-   // Enhanced node styling
+     const nodes = new vis.DataSet([]);
+      const edges = new vis.DataSet([]);
+      const nodeConnections = {};
+
       const groups = {
-        item: {
-          color: {
-            background: '#4a90e2',
-            border: '#357abd',
-            highlight: { background: '#6aa8ff', border: '#4a90e2' }
-          },
-          shape: 'hexagon',
-          font: { color: '#ffffff', size: 14 },
-          borderWidth: 2,
-          shadow: true
-        },
-        tag: {
-          color: {
-            background: '#e24a4a',
-            border: '#bd3535',
-            highlight: { background: '#ff6a6a', border: '#e24a4a' }
-          },
-          shape: 'triangle',
-          font: { color: '#ffffff', size: 16 },
-          borderWidth: 2,
-          shadow: true
-        }
+        item: { color: { background: '#4a90e2', border: '#357abd' } },
+        tag: { color: { background: '#e24a4a', border: '#bd3535' } }
       };
 
-      // Create network
-      const nodes = new vis.DataSet();
-      const edges = new vis.DataSet();
-      
-      // Add nodes and edges with enhanced relationships
       items.forEach(item => {
-        nodes.add({
+        const itemNode = {
           id: item.id,
           label: item.title,
-          group: 'item',
-          videoUrl: item.videoUrl,
-          shapeProperties: { interpolation: false },
-          physics: true
-        });
+          title: `<h3>${item.title}</h3><iframe width="200" height="150" src="${item.videoUrl}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`,
+          group: "item",
+          font: { color: '#ffffff' }
+        };
+        nodes.add(itemNode);
 
         item.tags.forEach(tag => {
-          if (!nodes.get(tag)) {
-            nodes.add({
-              id: tag,
-              label: tag,
-              group: 'tag',
-              value: 5,
-              physics: true
-            });
+          const tagNode = nodes.get(tag);
+          if (!tagNode) {
+            nodes.add({ id: tag, label: tag, group: "tag", font: { color: '#ffffff' } });
           }
-          edges.add({
-            from: item.id,
-            to: tag,
-            color: {
-              color: `hsl(${Math.random() * 360}, 70%, 50%)`,
-              highlight: '#ffffff'
-            },
-            width: 2,
-            smooth: { type: 'curvedCW', roundness: 0.3 }
-          });
+          edges.add({ from: item.id, to: tag, color: { color: '#666666', highlight: '#999999' } });
+
+          nodeConnections[tag] = (nodeConnections[tag] || 0) + 1;
+          nodeConnections[item.id] = (nodeConnections[item.id] || 0) + 1;
         });
       });
 
-      // Network configuration
+      nodes.forEach(node => {
+        const connectionCount = nodeConnections[node.id] || 0;
+        node.size = Math.max(12, connectionCount * 1.5); // Adjusted scaling factor to make nodes with more connections larger
+        nodes.update(node);
+      });
+
+      const container = document.getElementById("connections-graph");
+      const data = { nodes: nodes, edges: edges };
+
       const options = {
-        nodes: {
-          scaling: { min: 10, max: 30 },
-          shapeProperties: { useBorderWithImage: true },
-          shadow: {
-            enabled: true,
-            color: 'rgba(0,243,255,0.5)',
-            size: 15,
-            x: 0,
-            y: 0
-          }
-        },
-        edges: {
-          arrows: { to: { enabled: true, scaleFactor: 0.5 } },
-          selectionWidth: 3,
-          hoverWidth: 2.5
-        },
-        physics: {
-          enabled: true,
-          forceAtlas2Based: {
-            gravitationalConstant: -100,
-            centralGravity: 0.01,
-            springLength: 200,
-            springConstant: 0.05
-          },
-          stabilization: { iterations: 100 }
-        },
-        interaction: {
-          hover: true,
-          tooltipDelay: 200,
-          keyboard: { enabled: true, speed: { x: 10, y: 10, zoom: 0.1 } }
-        },
-        groups: groups
+        nodes: { shape: 'dot', font: { size: 14 }, scaling: { min: 10, max: 20 } },
+        edges: { width: 1, smooth: { type: 'continuous' } },
+        physics: { enabled: false, solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -50, centralGravity: 0.003, springLength: 150, springConstant: 0.08 }, stabilization: { iterations: 100 } },
+        interaction: { hover: true, zoomView: true, dragView: true, dragNodes: true, zoomSpeed: 0.5, tooltipDelay: 300 },
+        groups: groups,
+        layout: { randomSeed: 2, improvedLayout: true }
       };
 
-      const container = document.getElementById('connections-graph');
-      const network = new vis.Network(container, { nodes, edges }, options);
-
-      // New Features
-      let rotationInterval;
-      
-      // Auto-rotate
-      document.getElementById('auto-rotate').addEventListener('click', () => {
-        if (!rotationInterval) {
-          rotationInterval = setInterval(() => {
-            network.moveTo({
-              position: network.getViewPosition(),
-              scale: network.getScale(),
-              animation: { duration: 10000, easingFunction: 'linear' }
-            });
-          }, 100);
-        } else {
-          clearInterval(rotationInterval);
-          rotationInterval = null;
-        }
-      });
-
-      // Search functionality
-      document.getElementById('search').addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        nodes.forEach(node => {
-          const match = node.label.toLowerCase().includes(query);
-          nodes.update({ id: node.id, hidden: !match });
-        });
-      });
-
-      // Enhanced node click handling
-      network.on('click', (params) => {
-        if (params.nodes.length) {
-          const nodeId = params.nodes[0];
-          const node = nodes.get(nodeId);
-          if (node.videoUrl) {
-            document.getElementById('video-modal').style.display = 'block';
-            document.getElementById('modal-video').src = node.videoUrl;
-          }
-          // Highlight connected nodes
-          network.selectNodes([nodeId]);
-          const connectedEdges = network.getConnectedEdges(nodeId);
-          network.clusterOutliers({
-            joinCondition: (edge) => !connectedEdges.includes(edge.id)
-          });
-        }
-      });
-
-      // Particle effect
-      function createParticles() {
-        const particles = document.querySelector('.particles');
-        for (let i = 0; i < 50; i++) {
-          const particle = document.createElement('div');
-          particle.style.cssText = `
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: #00f3ff;
-            border-radius: 50%;
-            animation: particle-flow ${Math.random() * 10 + 5}s linear infinite;
-            left: ${Math.random() * 100}%;
-            opacity: ${Math.random() * 0.5};
-          `;
-          particles.appendChild(particle);
-        }
-      }
-      createParticles();
+      const network = new vis.Network(container, data, options);
 
       function applyCircularLayout() {
         const positions = {};
